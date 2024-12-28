@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List Application</title>
+    <style>
+        /* Global styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f9f9f9;
+        }
+
+        header {
+            background-color: #007BFF;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        /* Profile and time sections */
+        .profile,
+        .time {
+            margin-bottom: 20px;
+        }
+
+        /* Form styles */
+        .to-do-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .to-do-form textarea {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .priority {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .priority label {
+            font-size: 16px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .button-group button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .button-group button:hover {
+            opacity: 0.8;
+        }
+
+        .button-submit {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .button-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Table styles */
+        .to-do-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .to-do-table th,
+        .to-do-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+            word-wrap: break-word;
+        }
+
+        .to-do-table th {
+            background-color: #f4f4f4;
+        }
+
+        .done {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+
+        /* Completed tasks section */
+        h3 {
+            margin-top: 40px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            header {
+                font-size: 18px;
+                padding: 15px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .to-do-form textarea {
+                height: 80px;
+            }
+
+            .button-group button {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+
+            .to-do-table th,
+            .to-do-table td {
+                padding: 8px;
+            }
+
+            h3 {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .to-do-form textarea {
+                height: 60px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .button-group button {
+                flex: none;
+                width: 100%;
+            }
+
+            .to-do-table th,
+            .to-do-table td {
+                font-size: 14px;
+            }
+
+            h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>To-Do List Application</h1>
+    </header>
+    <div class="container">
+        <div class="profile">
+            <strong>Profile:</strong> Lidia Angelica Koswara - Web Developer
+        </div>
+        <div class="time">
+            <strong>Time:</strong> <span id="current-time"></span>
+        </div>
+
+        <form class="to-do-form" id="to-do-form">
+            <textarea id="task" placeholder="Write your task here..."></textarea>
+            <div class="priority">
+                <label for="priority">Priority:</label>
+                <select id="priority">
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
+            <div class="priority">
+                <label for="task-date">Date:</label>
+                <input type="date" id="task-date">
+            </div>
+            <div class="button-group">
+                <button type="button" class="button-submit" id="add-task">Submit</button>
+                <button type="button" class="button-delete" id="clear-tasks">Delete</button>
+                <button type="button" class="button-submit" id="filter-tasks">Filter by Date</button>
+                <button type="button" class="button-delete" id="overdue-tasks">Show Overdue</button>
+
+            </div>
+        </form>
+
+        <table class="to-do-table" id="to-do-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Priority</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Tasks will be added here dynamically -->
+            </tbody>
+        </table>
+
+        <h3>DONE</h3>
+        <table class="to-do-table" id="done-table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Priority</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Completed tasks will be added here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentTime = document.getElementById('current-time');
+            const taskInput = document.getElementById('task');
+            const priorityInput = document.getElementById('priority');
+            const taskDateInput = document.getElementById('task-date');
+            const addTaskButton = document.getElementById('add-task');
+            const clearTasksButton = document.getElementById('clear-tasks');
+            const filterTasksButton = document.getElementById('filter-tasks');
+            const toDoTable = document.getElementById('to-do-table').querySelector('tbody');
+            const doneTable = document.getElementById('done-table').querySelector('tbody');
+
+            function updateCurrentTime() {
+                const now = new Date();
+                currentTime.textContent = now.toLocaleString();
+            }
+
+            function saveTasksToLocalStorage() {
+                const tasks = [];
+                const rows = toDoTable.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const task = row.querySelector('td:first-child').textContent;
+                    const priority = row.querySelector('td:nth-child(2)').textContent;
+                    const date = row.querySelector('td:nth-child(3)').textContent;
+                    const isChecked = row.querySelector('input[type="checkbox"]').checked;
+                    tasks.push({ task, priority, date, isChecked });
+                });
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+
+                const doneTasks = [];
+                doneTable.querySelectorAll('tr').forEach(row => {
+                    const task = row.querySelector('td:first-child').textContent;
+                    const priority = row.querySelector('td:nth-child(2)').textContent;
+                    const date = row.querySelector('td:nth-child(3)').textContent;
+                    doneTasks.push({ task, priority, date });
+                });
+                localStorage.setItem('doneTasks', JSON.stringify(doneTasks));
+            }
+
+            function loadTasksFromLocalStorage() {
+                const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+                tasks.forEach(({ task, priority, date, isChecked }) => {
+                    const row = createTaskRow(task, priority, date, isChecked);
+                    toDoTable.appendChild(row);
+                });
+
+                const doneTasks = JSON.parse(localStorage.getItem('doneTasks')) || [];
+                doneTasks.forEach(({ task, priority, date }) => {
+                    const row = createDoneRow(task, priority, date);
+                    doneTable.appendChild(row);
+                });
+            }
+
+            function createTaskRow(task, priority, date, isChecked) {
+                const row = document.createElement('tr');
+
+                const taskCell = document.createElement('td');
+                taskCell.textContent = task;
+
+                const priorityCell = document.createElement('td');
+                priorityCell.textContent = priority;
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = date;
+
+                const statusCell = document.createElement('td');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.checked = isChecked;
+                if (isChecked) taskCell.classList.add('done');
+                checkbox.addEventListener('change', () => {
+                    if (checkbox.checked) {
+                        taskCell.classList.add('done');
+                        const doneRow = createDoneRow(task, priority, date);
+                        doneTable.appendChild(doneRow);
+                        row.remove();
+                    } else {
+                        taskCell.classList.remove('done');
+                    }
+                    saveTasksToLocalStorage();
+                });
+
+                statusCell.appendChild(checkbox);
+                row.appendChild(taskCell);
+                row.appendChild(priorityCell);
+                row.appendChild(dateCell);
+                row.appendChild(statusCell);
+
+                return row;
+            }
+
+            function createDoneRow(task, priority, date) {
+                const row = document.createElement('tr');
+
+                const taskCell = document.createElement('td');
+                taskCell.textContent = task;
+
+                const priorityCell = document.createElement('td');
+                priorityCell.textContent = priority;
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = date;
+
+                row.appendChild(taskCell);
+                row.appendChild(priorityCell);
+                row.appendChild(dateCell);
+
+                return row;
+            }
+
+            function addTask() {
+                const taskText = taskInput.value.trim();
+                const priority = priorityInput.value;
+                const taskDate = taskDateInput.value;
+
+                if (!taskText || !taskDate) {
+                    alert('Please enter a task and select a date.');
+                    return;
+                }
+
+                const row = createTaskRow(taskText, priority, taskDate, false);
+                toDoTable.appendChild(row);
+                taskInput.value = '';
+                taskDateInput.value = '';
+                saveTasksToLocalStorage();
+            }
+
+            function clearTasks() {
+                if (confirm('Are you sure you want to clear all tasks?')) {
+                    toDoTable.innerHTML = '';
+                    doneTable.innerHTML = '';
+                    saveTasksToLocalStorage();
+                }
+            }
+
+            function filterTasks() {
+                const filterDate = taskDateInput.value;
+                if (!filterDate) {
+                    alert('Please select a date to filter tasks.');
+                    return;
+                }
+
+                const rows = Array.from(toDoTable.querySelectorAll('tr'));
+                rows.forEach(row => {
+                    const rowDate = row.querySelector('td:nth-child(3)').textContent;
+                    row.style.display = rowDate === filterDate ? '' : 'none';
+                });
+            }
+
+            function showOverdueTasks() {
+                const now = new Date();
+                const rows = Array.from(toDoTable.querySelectorAll('tr'));
+                rows.forEach(row => {
+                    const rowDate = row.querySelector('td:nth-child(3)').textContent;
+                    const taskDate = new Date(rowDate);
+                    if (taskDate < now) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            // Event listener untuk tombol overdue
+            document.getElementById('overdue-tasks').addEventListener('click', showOverdueTasks);
+
+
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+
+            addTaskButton.addEventListener('click', addTask);
+            clearTasksButton.addEventListener('click', clearTasks);
+            filterTasksButton.addEventListener('click', filterTasks);
+
+            loadTasksFromLocalStorage();
+        });
+    </script>
+</body>
+
+</html>
